@@ -1,0 +1,268 @@
+-- ╔══════════════════════════════════════════════════╗
+-- ║           YUMMI HUB - SPEED SCRIPT v1.0          ║
+-- ║     Menu de Velocidade Personalizável             ║
+-- ╚══════════════════════════════════════════════════╝
+
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+-- ╔══════════════════════════════════════════════════╗
+-- ║              CONFIGURAÇÕES DO SCRIPT             ║
+-- ╚══════════════════════════════════════════════════╝
+
+local speedEnabled = false
+local currentSpeed = 50
+local maxSpeed = 200
+local minSpeed = 0
+local speedIncrement = 10
+local menuOpen = false
+
+local speedConfig = {
+	normal = 50,
+	fast = 100,
+	ultrafast = 150,
+	lightspeed = 200
+}
+
+-- ╔══════════════════════════════════════════════════╗
+-- ║              FUNÇÕES DE INTERFACE                ║
+-- ╚══════════════════════════════════════════════════╝
+
+local function createScreenGui()
+	local screenGui = Instance.new("ScreenGui")
+	screenGui.Name = "YummiSpeedGui"
+	screenGui.ResetOnSpawn = false
+	screenGui.Parent = player:WaitForChild("PlayerGui")
+	return screenGui
+end
+
+local function createTitleLabel(parent)
+	local titleLabel = Instance.new("TextLabel")
+	titleLabel.Name = "TitleLabel"
+	titleLabel.Size = UDim2.new(0, 300, 0, 40)
+	titleLabel.Position = UDim2.new(0.5, -150, 0.05, 0)
+	titleLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+	titleLabel.BackgroundTransparency = 0.2
+	titleLabel.BorderSizePixel = 0
+	titleLabel.TextColor3 = Color3.fromRGB(255, 100, 200)
+	titleLabel.TextScaled = true
+	titleLabel.Font = Enum.Font.GothamBold
+	titleLabel.Text = "🚀 YUMMI HUB - SPEED 🚀"
+	titleLabel.Visible = false
+	titleLabel.Parent = parent
+	return titleLabel
+end
+
+local function createSpeedDisplay(parent)
+	local speedDisplay = Instance.new("TextLabel")
+	speedDisplay.Name = "SpeedDisplay"
+	speedDisplay.Size = UDim2.new(0, 300, 0, 50)
+	speedDisplay.Position = UDim2.new(0.5, -150, 0.12, 0)
+	speedDisplay.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+	speedDisplay.BackgroundTransparency = 0.3
+	speedDisplay.BorderSizePixel = 0
+	speedDisplay.TextColor3 = Color3.fromRGB(100, 255, 150)
+	speedDisplay.TextScaled = true
+	speedDisplay.Font = Enum.Font.GothamBold
+	speedDisplay.Text = "Velocidade: " .. currentSpeed
+	speedDisplay.Visible = false
+	speedDisplay.Parent = parent
+	return speedDisplay
+end
+
+local function createSpeedButton(parent, text, position, color, callback)
+	local button = Instance.new("TextButton")
+	button.Name = text .. "Button"
+	button.Size = UDim2.new(0, 280, 0, 35)
+	button.Position = position
+	button.BackgroundColor3 = color
+	button.BackgroundTransparency = 0.3
+	button.BorderSizePixel = 0
+	button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	button.TextScaled = true
+	button.Font = Enum.Font.GothamBold
+	button.Text = text
+	button.Visible = false
+	
+	button.MouseButton1Click:Connect(callback)
+	
+	-- Efeito ao passar o mouse
+	button.MouseEnter:Connect(function()
+		button.BackgroundTransparency = 0.1
+	end)
+	
+	button.MouseLeave:Connect(function()
+		button.BackgroundTransparency = 0.3
+	end)
+	
+	button.Parent = parent
+	return button
+end
+
+local function createControlsLabel(parent)
+	local controlsLabel = Instance.new("TextLabel")
+	controlsLabel.Name = "ControlsLabel"
+	controlsLabel.Size = UDim2.new(0, 300, 0, 80)
+	controlsLabel.Position = UDim2.new(0.5, -150, 0.7, 0)
+	controlsLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+	controlsLabel.BackgroundTransparency = 0.4
+	controlsLabel.BorderSizePixel = 0
+	controlsLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+	controlsLabel.TextScaled = true
+	controlsLabel.Font = Enum.Font.GothamMedium
+	controlsLabel.Text = "⬆️ Seta Acima - Aumentar\n⬇️ Seta Abaixo - Diminuir\n[M] - Menu\n[ESPAÇO] - Ativar/Desativar"
+	controlsLabel.Visible = false
+	controlsLabel.TextWrapped = true
+	controlsLabel.Parent = parent
+	return controlsLabel
+end
+
+-- ╔══════════════════════════════════════════════════╗
+-- ║              CRIAÇÃO DA GUI                      ║
+-- ╚══════════════════════════════════════════════════╝
+
+local screenGui = createScreenGui()
+local titleLabel = createTitleLabel(screenGui)
+local speedDisplay = createSpeedDisplay(screenGui)
+local controlsLabel = createControlsLabel(screenGui)
+
+-- Botões presets
+local normalButton = createSpeedButton(
+	screenGui,
+	"🚶 Normal (50)",
+	UDim2.new(0.5, -140, 0.22, 0),
+	Color3.fromRGB(100, 150, 200),
+	function() currentSpeed = speedConfig.normal end
+)
+
+local fastButton = createSpeedButton(
+	screenGui,
+	"🏃 Rápido (100)",
+	UDim2.new(0.5, -140, 0.3, 0),
+	Color3.fromRGB(255, 150, 0),
+	function() currentSpeed = speedConfig.fast end
+)
+
+local ultrafastButton = createSpeedButton(
+	screenGui,
+	"⚡ Ultra Rápido (150)",
+	UDim2.new(0.5, -140, 0.38, 0),
+	Color3.fromRGB(255, 100, 0),
+	function() currentSpeed = speedConfig.ultrafast end
+)
+
+local lightspeedButton = createSpeedButton(
+	screenGui,
+	"💥 Velocidade da Luz (200)",
+	UDim2.new(0.5, -140, 0.46, 0),
+	Color3.fromRGB(255, 50, 150),
+	function() currentSpeed = speedConfig.lightspeed end
+)
+
+local toggleButton = createSpeedButton(
+	screenGui,
+	"🔄 " .. (speedEnabled and "ATIVAR ✓" or "DESATIVAR ✗"),
+	UDim2.new(0.5, -140, 0.54, 0),
+	Color3.fromRGB(100, 200, 100),
+	function()
+		speedEnabled = not speedEnabled
+		toggleButton.Text = "🔄 " .. (speedEnabled and "ATIVAR ✓" or "DESATIVAR ✗")
+		toggleButton.BackgroundColor3 = speedEnabled and Color3.fromRGB(100, 200, 100) or Color3.fromRGB(200, 100, 100)
+	end
+)
+
+-- ╔══════════════════════════════════════════════════╗
+-- ║           FUNÇÕES DE VELOCIDADE                 ║
+-- ╚══════════════════════════════════════════════════╝
+
+local function applySpeed()
+	if speedEnabled and humanoidRootPart then
+		local direction = humanoidRootPart.CFrame.LookVector
+		humanoidRootPart.Velocity = Vector3.new(
+			direction.X * currentSpeed,
+			humanoidRootPart.Velocity.Y,
+			direction.Z * currentSpeed
+		)
+	end
+end
+
+local function toggleMenu()
+	menuOpen = not menuOpen
+	titleLabel.Visible = menuOpen
+	speedDisplay.Visible = menuOpen
+	controlsLabel.Visible = menuOpen
+	normalButton.Visible = menuOpen
+	fastButton.Visible = menuOpen
+	ultrafastButton.Visible = menuOpen
+	lightspeedButton.Visible = menuOpen
+	toggleButton.Visible = menuOpen
+	
+	if menuOpen then
+		speedDisplay.Text = "Velocidade Atual: " .. currentSpeed
+	end
+end
+
+-- ╔══════════════════════════════════════════════════╗
+-- ║           CONFIGURAÇÃO DE INPUTS                ║
+-- ╚══════════════════════════════════════════════════╝
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	
+	if input.KeyCode == Enum.KeyCode.M then
+		toggleMenu()
+	elseif input.KeyCode == Enum.KeyCode.Space then
+		speedEnabled = not speedEnabled
+		toggleButton.Text = "🔄 " .. (speedEnabled and "ATIVAR ✓" or "DESATIVAR ✗")
+		toggleButton.BackgroundColor3 = speedEnabled and Color3.fromRGB(100, 200, 100) or Color3.fromRGB(200, 100, 100)
+	elseif input.KeyCode == Enum.KeyCode.Up then
+		currentSpeed = math.min(currentSpeed + speedIncrement, maxSpeed)
+		if menuOpen then
+			speedDisplay.Text = "Velocidade Atual: " .. currentSpeed
+		end
+	elseif input.KeyCode == Enum.KeyCode.Down then
+		currentSpeed = math.max(currentSpeed - speedIncrement, minSpeed)
+		if menuOpen then
+			speedDisplay.Text = "Velocidade Atual: " .. currentSpeed
+		end
+	end
+end)
+
+-- ╔══════════════════════════════════════════════════╗
+-- ║           LOOP DE RENDERIZAÇÃO                  ║
+-- ╚══════════════════════════════════════════════════╝
+
+RunService.RenderStepped:Connect(function()
+	if character and humanoidRootPart and humanoid.Health > 0 then
+		applySpeed()
+	end
+end)
+
+-- ╔═════════════════════════════════════���════════════╗
+-- ║           TRATAMENTO DE MORTE                   ║
+-- ╚══════════════════════════════════════════════════╝
+
+humanoid.Died:Connect(function()
+	speedEnabled = false
+	menuOpen = false
+	-- Esconder GUI
+	titleLabel.Visible = false
+	speedDisplay.Visible = false
+	controlsLabel.Visible = false
+	normalButton.Visible = false
+	fastButton.Visible = false
+	ultrafastButton.Visible = false
+	lightspeedButton.Visible = false
+	toggleButton.Visible = false
+end)
+
+print("✅ YUMMI HUB - Speed Script carregado com sucesso!")
+print("📌 Pressione M para abrir o menu")
+print("⌨️ Use as setas para ajustar velocidade")
+print("🚀 Pressione ESPAÇO para ativar/desativar")
